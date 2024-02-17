@@ -18,6 +18,19 @@ def request_access(client, browser, production):
 
     __browser = webbrowser.get(browser)
 
+
+    sandbox_acc = (f'https://identity-sandbox.test.vismaonline.com'
+                  f'/connect/authorize'
+                  f'?client_id={client}&'
+                  f'redirect_uri=https://identity-sandbox.test'
+                  f'.vismaonline.com/redirect_receiver&scope=ea:api%20offline_access'
+                  f'%20ea:sales%20ea:accounting%20ea:purchase&state=FromPythonCLI&response_type=code'
+                  f'&prompt=login'
+                  )
+
+    print(sandbox_acc)
+    exit()
+
     if production:
         __browser.open((f'https://identity.vismaonline.com/connect/authorize'
                         f'?client_id='
@@ -67,4 +80,3 @@ def get_token(code, client, secret, production):
     click.echo(
         json.dumps(auth_info)
     )
-
