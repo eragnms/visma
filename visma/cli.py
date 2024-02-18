@@ -13,14 +13,6 @@ from urllib.parse import urlparse, parse_qs
 def cli():
     pass
 
-# This is the url I have tried for authorization:
-# https://identity-sandbox.test.vismaonline.com
-# /connect/authorize
-# ?client_id=microcompnordicab&
-# redirect_uri=https://localhost:44300/callback&scope=ea:api
-# %20offline_access&state=CanSayAnything&response_type=code
-# &prompt=login
-
 @cli.command()
 @click.option('--client', default='', help='Client ID')
 @click.option('--redirect', default='', help='Redirect URI')
