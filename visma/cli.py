@@ -3,6 +3,7 @@ import webbrowser
 import requests
 import datetime
 import json
+from os import environ
 
 @click.group()
 def cli():
@@ -17,12 +18,17 @@ def cli():
 # &prompt=login
 
 @cli.command()
-@click.option('--client', prompt=True, help='Client ID')
-@click.option('--redirect', prompt=True, help='Redirect URI')
+@click.option('--client', default='', help='Client ID')
+@click.option('--redirect', default='', help='Redirect URI')
 @click.option('--browser', default='firefox', help='Specify browser')
 @click.option('--production', is_flag=True, )
 def request_access(client, redirect, browser, production):
     click.echo('Opening webpage')
+
+    if client == '':
+        client = environ.get('VISMA_API_CLIENT_ID')
+    if redirect == '':
+        redirect = environ.get('VISMA_API_REDIRECT_URI')
 
     __browser = webbrowser.get(browser)
 
@@ -48,11 +54,21 @@ def request_access(client, redirect, browser, production):
 
 @cli.command()
 @click.option('--code', prompt=True, help='Client ID')
-@click.option('--client', prompt=True, help='Client ID')
-@click.option('--secret', prompt=True, help='Client ID')
-@click.option('--redirect', prompt=True, help='Redirect URI')
+@click.option('--client', default='', help='Client ID')
+@click.option('--secret', default='', help='Client ID')
+@click.option('--redirect', default='', help='Redirect URI')
+@click.option('--tokenfile', default='', help='Filename to save token to')
 @click.option('--production', is_flag=True, )
-def get_token(code, client, secret, redirect, production):
+def get_token(code, client, secret, redirect, tokenfile, production):
+
+    if client == '':
+        client = environ.get('VISMA_API_CLIENT_ID')
+    if redirect == '':
+        redirect = environ.get('VISMA_API_REDIRECT_URI')
+    if secret == '':
+        secret = environ.get('VISMA_API_CLIENT_SECRET')
+    if tokenfile == '':
+        tokenfile = environ.get('VISMA_API_TOKEN_PATH')
 
     TEST_URL = 'https://identity-sandbox.test.vismaonline.com/connect/token'
     PROD_URL = 'https://identity.vismaonline.com/connect/token'
@@ -79,3 +95,6 @@ def get_token(code, client, secret, redirect, production):
     click.echo(
         json.dumps(auth_info)
     )
+
+    with open(tokenfile, 'w') as json_file:
+        json.dump(auth_info, json_file, indent=4)
