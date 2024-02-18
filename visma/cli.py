@@ -43,7 +43,6 @@ def request_access(client, redirect, browser, production):
             f'%20ea:sales%20ea:accounting%20ea:purchase&state=FromPythonCLI&response_type=code'
             f'&prompt=login'
         )
-        print(sandbox_acc)
         __browser.open(sandbox_acc, new=1)
 
 
@@ -63,8 +62,6 @@ def get_token(code, client, secret, redirect, production):
     }
 
     data = f'grant_type=authorization_code&code={code}&redirect_uri={redirect}'
-
-    print(credentials)
 
     if production:
         response = requests.post(PROD_URL, data,  auth=credentials, headers=headers)
