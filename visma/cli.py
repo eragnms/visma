@@ -51,8 +51,9 @@ def request_access(client, redirect, browser, production):
 @click.option('--code', prompt=True, help='Client ID')
 @click.option('--client', prompt=True, help='Client ID')
 @click.option('--secret', prompt=True, help='Client ID')
+@click.option('--redirect', prompt=True, help='Redirect URI')
 @click.option('--production', is_flag=True, )
-def get_token(code, client, secret, production):
+def get_token(code, client, secret, redirect, production):
 
     TEST_URL = 'https://identity-sandbox.test.vismaonline.com/connect/token'
     PROD_URL = 'https://identity.vismaonline.com/connect/token'
@@ -61,7 +62,9 @@ def get_token(code, client, secret, production):
         'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
     }
 
-    data = f'grant_type=authorization_code&code={code}&redirect_uri=https://identity-sandbox.test.vismaonline.com/redirect_receiver'
+    data = f'grant_type=authorization_code&code={code}&redirect_uri={redirect}'
+
+    print(credentials)
 
     if production:
         response = requests.post(PROD_URL, data,  auth=credentials, headers=headers)
