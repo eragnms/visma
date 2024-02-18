@@ -8,28 +8,23 @@ import json
 def cli():
     pass
 
+# This is the url I have tried for authorization:
+# https://identity-sandbox.test.vismaonline.com
+# /connect/authorize
+# ?client_id=microcompnordicab&
+# redirect_uri=https://localhost:44300/callback&scope=ea:api
+# %20offline_access&state=CanSayAnything&response_type=code
+# &prompt=login
 
 @cli.command()
 @click.option('--client', prompt=True, help='Client ID')
-@click.option('--browser', default='chrome', help='Specify browser')
+@click.option('--redirect', prompt=True, help='Redirect URI')
+@click.option('--browser', default='firefox', help='Specify browser')
 @click.option('--production', is_flag=True, )
-def request_access(client, browser, production):
+def request_access(client, redirect, browser, production):
     click.echo('Opening webpage')
 
     __browser = webbrowser.get(browser)
-
-
-    sandbox_acc = (f'https://identity-sandbox.test.vismaonline.com'
-                  f'/connect/authorize'
-                  f'?client_id={client}&'
-                  f'redirect_uri=https://identity-sandbox.test'
-                  f'.vismaonline.com/redirect_receiver&scope=ea:api%20offline_access'
-                  f'%20ea:sales%20ea:accounting%20ea:purchase&state=FromPythonCLI&response_type=code'
-                  f'&prompt=login'
-                  )
-
-    print(sandbox_acc)
-    exit()
 
     if production:
         __browser.open((f'https://identity.vismaonline.com/connect/authorize'
@@ -39,13 +34,17 @@ def request_access(client, browser, production):
                         f'%20ea:sales%20ea:accounting%20ea:purchase&state=FromPythonCLI&response_type=code'
                         f'&prompt=login'), new=1)
     else:
-        __browser.open((f'https://identity-sandbox.test.vismaonline.com'
-                        f'/connect/authorize'
-                        f'?client_id={client}&'
-                        f'redirect_uri=https://identity-sandbox.test'
-                        f'.vismaonline.com/redirect_receiver&scope=ea:api%20offline_access'
-                        f'%20ea:sales%20ea:accounting%20ea:purchase&state=FromPythonCLI&response_type=code'
-                        f'&prompt=login'), new=1)
+        sandbox_acc = (
+            f'https://identity-sandbox.test.vismaonline.com'
+            f'/connect/authorize'
+            f'?client_id={client}&'
+            f'redirect_uri={redirect}'
+            f'&scope=ea:api%20offline_access'
+            f'%20ea:sales%20ea:accounting%20ea:purchase&state=FromPythonCLI&response_type=code'
+            f'&prompt=login'
+        )
+        print(sandbox_acc)
+        __browser.open(sandbox_acc, new=1)
 
 
 @cli.command()
