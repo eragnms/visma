@@ -40,12 +40,14 @@ class Manager:
         return method in self.envelopes.keys()
 
     def _get_query_set(self, *args, **kwargs):
+        logging.debug(self.api)
         return APIQuerySet(model=self.model, api=self.api, schema=self.schema,
                            *args, **kwargs)
 
     def all(self):
         envelopes = self.envelopes.get('LIST', None)
 
+        logging.error("****")
         if envelopes:
             return self._get_query_set(envelope=envelopes)
         else:

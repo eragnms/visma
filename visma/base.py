@@ -1,6 +1,7 @@
 import copy
 import os
 
+import logging
 from marshmallow import Schema, post_load, fields
 from marshmallow.base import FieldABC
 from marshmallow.utils import _Missing
@@ -8,6 +9,7 @@ from marshmallow.utils import _Missing
 from visma.manager import Manager
 from visma.utils import is_instance_or_subclass, import_string
 
+logger = logging.getLogger(__name__)
 
 class VismaSchema(Schema):
     visma_model = None
@@ -32,6 +34,7 @@ class VismaModelMeta(type):
 
     def __new__(mcs, name, bases, attrs):
 
+        logging.debug(f"name: {name}, bases: {bases}, attrs: {attrs}")
         # Also ensure initialization is only performed for subclasses of Model
         # (excluding Model class itself).
         parents = [b for b in bases if isinstance(b, VismaModelMeta)]
@@ -74,6 +77,9 @@ class VismaModelMeta(type):
 
             api_klass_path = os.environ.get('VISMA_API_CLASS',
                                             default='visma.api.NoAPI')
+
+            # api_klass_path = os.environ.get('VISMA_API_CLASS',
+            #                                default='.visma.models')
             api_klass = import_string(api_klass_path)
             manager.api = api_klass.load()
 
