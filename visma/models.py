@@ -310,9 +310,21 @@ class Customer(VismaModel):
         data_key='AutoInvoiceRegistrationRequestSentDate', allow_none=True)
     email_addresses = fields.List(fields.String(), data_key='EmailAddresses',
                                   allow_none=True)
-
     customer_labels = fields.List(fields.Nested('CustomerLabelSchema'),
                                   data_key='CustomerLabels', allow_none=True)
+    sales_price_list_id = fields.String(data_key='SalesPriceListId',
+                                        allow_none=True)
+    unpaid_invoice_amount = fields.Number(description='Format: 4 decimals',
+                                          data_key='UnpaidInvoiceAmount',
+                                          default=0)
+    message_threads = fields.List(fields.String(), data_key='MessageThreads',
+                                  allow_none=True)
+    notes = fields.List(fields.String(), data_key='Notes',
+                        allow_none=True)
+    is_future_invoice_date_allowed = fields.Boolean(required=True,
+                                                    data_key='IsFutureInvoiceDateAllowed',
+                                                    default=False)
+
 
     class Meta:
         endpoint = '/customers'
