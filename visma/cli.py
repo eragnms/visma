@@ -1,4 +1,5 @@
 import click
+import logging
 import webbrowser
 import requests
 import datetime
@@ -8,6 +9,8 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import time
 from urllib.parse import urlparse, parse_qs
+
+logger = logging.getLogger(__name__)
 
 @click.group()
 def cli():

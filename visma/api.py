@@ -1,4 +1,5 @@
 import json
+import logging
 import datetime
 import iso8601
 import requests
@@ -8,6 +9,7 @@ from marshmallow import fields
 
 from visma.query import QueryCompiler, FilterParser
 
+logger = logging.getLogger(__name__)
 
 class GreaterThanFilterParser(FilterParser):
 
@@ -270,4 +272,3 @@ class NoAPI:
     @classmethod
     def load(cls):
         return cls
-

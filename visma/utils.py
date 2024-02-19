@@ -1,6 +1,8 @@
+import logging
 from importlib import import_module
 from os import environ
 
+logger = logging.getLogger(__name__)
 
 def import_string(dotted_path):
     """

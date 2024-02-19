@@ -1,8 +1,10 @@
 from marshmallow.validate import OneOf, Length, Regexp, Range
 from marshmallow import fields
 
+import logging
 from visma.base import VismaModel
 
+logger = logging.getLogger(__name__)
 
 class PaginatedResponse(VismaModel):
     """
@@ -145,7 +147,6 @@ class Customer(VismaModel):
 
 
     """
-
     id = fields.UUID(description='Read-only: Unique Id provided by eAccounting',
                      data_key='Id', load_only=True, )
     customer_number = fields.String(description=('Max length: 20 characters. '

@@ -15,7 +15,7 @@ class VismaSchema(Schema):
     visma_model = None
 
     @post_load
-    def make_instance(self, data):
+    def make_instance(self, data, **kwargs):
         return self.visma_model(**data)
 
 

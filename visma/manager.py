@@ -47,7 +47,6 @@ class Manager:
     def all(self):
         envelopes = self.envelopes.get('LIST', None)
 
-        logging.error("****")
         if envelopes:
             return self._get_query_set(envelope=envelopes)
         else:

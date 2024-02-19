@@ -1,7 +1,10 @@
 import json
+import logging
 import uuid
 
 from marshmallow import fields
+
+logger = logging.getLogger(__name__)
 
 """
 THe aim of the query module is to enable adding query parameters to our API Calls
