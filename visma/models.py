@@ -768,6 +768,13 @@ class CustomerInvoiceDraftRow(VismaModel):
         data_key='VatRateId', load_only=True)
     unit_name = fields.String(data_key='UnitName', allow_none=True)
     project_id = fields.UUID(data_key='ProjectId', allow_none=True)
+    green_technology_type = fields.Number(data_key='GreenTechnologyType', default=0)
+    id = fields.String(data_key='Id', allow_none=True)
+    unit_abbreviation_english = fields.String(data_key='UnitAbbreviationEnglish', allow_none=True)
+    unit_id = fields.String(data_key='UnitId', allow_none=True)
+    ContributionMargin = fields.Nested('ContributionMarginSchema',
+                                       data_key='ContributionMargin', allow_none=True,
+                                       load_only=True)
 
     def __str__(self):
         return '%s object (%s)' % (self.__class__.__name__, self.line_number)
