@@ -314,8 +314,7 @@ class Customer(VismaModel):
                                   data_key='CustomerLabels', allow_none=True)
     sales_price_list_id = fields.String(data_key='SalesPriceListId',
                                         allow_none=True)
-    unpaid_invoice_amount = fields.Number(description='Format: 4 decimals',
-                                          data_key='UnpaidInvoiceAmount',
+    unpaid_invoices_amount = fields.Number(data_key='UnpaidInvoicesAmount',
                                           default=0)
     message_threads = fields.List(fields.String(), data_key='MessageThreads',
                                   allow_none=True)
@@ -324,6 +323,20 @@ class Customer(VismaModel):
     is_future_invoice_date_allowed = fields.Boolean(required=True,
                                                     data_key='IsFutureInvoiceDateAllowed',
                                                     default=False)
+    email_address_order = fields.String(data_key='EmailAddressOrder',
+                                        allow_none=True)
+    direct_debit_customer_settings = fields.Nested('DirectDebitCustomerSettingsSchema',
+                                                   data_key='DirectDebitCustomerSettings', allow_none=True,
+                                                   load_only=True)
+    iban = fields.String(data_key='Iban', allow_none=True)
+    discount_agreement_id = fields.String(data_key='DiscountAgreementId',
+                                          allow_none=True)
+    email_address_quote = fields.String(data_key='EmailAddressQuote',
+                                        allow_none=True)
+    is_northern_ireland = fields.Boolean(required=True,
+                                         data_key='IsNorthernIreland',
+                                         default=False)
+    delivery_based_vat = fields.Boolean(required=True, data_key='DeliveryBasedVat',default=False)
 
 
     class Meta:
