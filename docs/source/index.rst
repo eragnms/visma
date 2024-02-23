@@ -11,6 +11,7 @@ Visma is a python client/ORM for the Visma eAccounting API
    usage
    models
    framework
+   design_description
 
 
 Commercial Support and Development

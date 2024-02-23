@@ -12,6 +12,24 @@ from marshmallow.validate import (
 )
 from swagger_marshmallow_codegen.validate import Range
 import re
+from visma.base import VismaModel
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class PaginatedResponse(VismaModel):
+    """
+    Represents the structure of paginated responses on all API endpoints that
+    supports pagination.
+
+    .. note::
+       As of now this is overridden in model meta class.
+       Had problem getting the attriutes to register on creation
+
+    """
+    meta = fields.Nested('PaginationMetadataSchema', data_key='Meta')
 
 
 class AccountApi(Schema):
@@ -462,7 +480,7 @@ class CompanyRotRutSettingsApi(Schema):
 
 
 
-class CompanySettingsApi(Schema):
+class CompanySettings(VismaModel):
     AccountNumberDigits = fields.Integer(dump_only=True)
     AccountingLockInterval = fields.Integer(description='0 = None, 1 = Month, 2 = Quarter, 3 = Year, 4 = TaxDeclaration', dump_only=True, validate=[OneOf(choices=[0, 1, 2, 3, 4], labels=[])])
     AccountingLockedTo = fields.AwareDateTime(dump_only=True)
@@ -527,7 +545,8 @@ class CompanySettingsApi(Schema):
     Website = fields.String(description='Max length: 255 characters', validate=[Length(min=0, max=255, equal=None)])
 
     class Meta:
-        unknown = INCLUDE
+        endpoint = '/companysettings'
+        allowed_methods = ['list', 'update']
 
 
 
@@ -630,72 +649,77 @@ class CurrencyApi(Schema):
 
 
 
-class CustomerApi(Schema):
-    AutoInvoiceActivationEmailSentDate = fields.AwareDateTime()
-    AutoInvoiceRegistrationRequestSentDate = fields.AwareDateTime()
-    ChangedUtc = fields.AwareDateTime(description='Purpose: Returns the last date and time from when a change was made on the customer', dump_only=True)
-    ContactPersonEmail = fields.String(description='Max length: 255 characters', validate=[Length(min=0, max=255, equal=None)])
-    ContactPersonMobile = fields.String(description='Max length: 50 characters', validate=[Length(min=0, max=50, equal=None)])
-    ContactPersonName = fields.String(description='Max length: 100 characters', validate=[Length(min=0, max=100, equal=None)])
-    ContactPersonPhone = fields.String(description='Max length: 50 characters', validate=[Length(min=0, max=50, equal=None)])
-    CorporateIdentityNumber = fields.String(description='Max length: 20 characters', validate=[Length(min=0, max=20, equal=None)])
-    CurrencyCode = fields.String(description='Max length: 3 characters. Default value: Currency of the user company', validate=[Length(min=0, max=3, equal=None)])
-    CustomerLabels = fields.List(fields.Nested(lambda: CustomerLabelApi()))
-    CustomerNumber = fields.String(description='Max length: 16 characters. Purpose: Unique identifier. If not provided, eAccounting will provide one', validate=[Length(min=0, max=16, equal=None)])
-    DeliveryAddress1 = fields.String(description='Max length: 50 characters. Purpose: Only used if invoice address differs from delivery address', validate=[Length(min=0, max=50, equal=None)])
-    DeliveryAddress2 = fields.String(description='Max length: 50 characters. Purpose: Only used if invoice address differs from delivery address', validate=[Length(min=0, max=50, equal=None)])
-    DeliveryBasedVat = fields.Boolean(description='Purpose: Option to set the delivery address as the base for vat and oss calculations. Delivery city, country code and postal code must be set as well')
-    DeliveryCity = fields.String(description='Max length: 50 characters. Purpose: Only used if invoice city differs from delivery city', validate=[Length(min=0, max=50, equal=None)])
-    DeliveryCountryCode = fields.String(description='Max length: 2 characters. Purpose: Only used if invoice country code differs from delivery country code', validate=[Length(min=0, max=2, equal=None)])
-    DeliveryCustomerName = fields.String(description='Max length: 100 characters', validate=[Length(min=0, max=100, equal=None)])
-    DeliveryMethodId = fields.UUID(description='Source: Get from /v2/deliverymethods')
-    DeliveryPostalCode = fields.String(description='Max length: 10 characters. If DeliveryBasedVat is set to true this should be filled in as well', validate=[Length(min=0, max=10, equal=None)])
-    DeliveryTermId = fields.UUID(description='Source: Get from /v2/deliveryterms')
-    DirectDebitCustomerSettings = fields.Nested(lambda: DirectDebitCustomerSettingsApi())
-    DiscountAgreementId = fields.UUID(description='Returns the discount agreement id that is connected to the customer. It will be used only for Pro variant companies')
-    DiscountPercentage = fields.Number(description='Format: 4 decimals', validate=[Range(min=0, max=1, min_inclusive=True, max_inclusive=True), Regexp(regex=re.compile('[-]?\\d+(.\\d{1,4})?'))])
-    EdiGlnNumber = fields.String(validate=[Length(min=0, max=255, equal=None)])
-    EdiServiceDelivererId = fields.String(validate=[Length(min=0, max=255, equal=None)])
-    ElectronicAddress = fields.String(validate=[Length(min=0, max=255, equal=None)])
-    ElectronicReference = fields.String(validate=[Length(min=0, max=35, equal=None)])
-    EmailAddress = fields.String(description='Max length: 255 characters\r\nThis is a default email address for sending customer invoices.\r\nIf EmailAddressOrder and EmailAddressQuote properties are empty we use this email as default one for sending quotes and orders.', validate=[Length(min=0, max=255, equal=None)])
-    EmailAddressOrder = fields.String(description='Max length: 255 characters\r\nThis is a default email address for sending orders.\r\nIf it is empty then we use general EmailAddress property.', validate=[Length(min=0, max=255, equal=None)])
-    EmailAddressQuote = fields.String(description='Max length: 255 characters\r\nThis is a default email address for sending quotes.\r\nIf it is empty then we use general EmailAddress property.', validate=[Length(min=0, max=255, equal=None)])
-    EmailAddresses = fields.List(fields.String())
-    ForceBookkeepVat = fields.Boolean()
-    GLN = fields.String(description='NOTE: Obsolete. Please use EdiGlnNumber instead', validate=[Length(min=0, max=255, equal=None)])
-    Iban = fields.String(description="Max length: 35 characters\r\nDefault value: existing database value (PUT) or empty string (POST)\r\nPurpose: Customer's bank account IBAN (manual entry)", validate=[Length(min=0, max=35, equal=None)])
-    Id = fields.UUID(description='Purpose: Unique Id provided by eAccounting', dump_only=True)
-    InvoiceAddress1 = fields.String(description='Max length: 50 characters', validate=[Length(min=0, max=50, equal=None)])
-    InvoiceAddress2 = fields.String(description='Max length: 50 characters', validate=[Length(min=0, max=50, equal=None)])
-    InvoiceCity = fields.String(required=True, description='Max length: 50 characters', validate=[Length(min=0, max=50, equal=None)])
-    InvoiceCountryCode = fields.String(description='Max length: 2 characters. When setting a VAT number this should be filled in as well.', validate=[Length(min=0, max=2, equal=None)])
-    InvoicePostalCode = fields.String(required=True, description='Max length: 10 characters', validate=[Length(min=0, max=10, equal=None)])
-    IsActive = fields.Boolean(required=True)
-    IsDirectDebitEnabled = fields.Boolean(description='Purpose: Setting for Direct Debit payments')
-    IsFutureInvoiceDateAllowed = fields.Boolean(description='Purpose: Future dates on invoices are allowed based on terms of payments and invoice currency code settings', dump_only=True)
-    IsNorthernIreland = fields.Boolean()
-    IsPrivatePerson = fields.Boolean(required=True)
-    LastInvoiceDate = fields.AwareDateTime(description='Purpose: Returns the last invoice date', dump_only=True)
-    MessageThreads = fields.List(fields.UUID(), description='Fetch messages via GET /v2/messagethreads/{messageThreadId}', dump_only=True)
-    MobilePhone = fields.String(description='Max length: 50 characters', validate=[Length(min=0, max=50, equal=None)])
-    Name = fields.String(required=True, description='Max length: 50 characters', validate=[Length(min=0, max=50, equal=None)])
-    Note = fields.String(description='Max length: 4000 characters', validate=[Length(min=0, max=4000, equal=None)])
-    Notes = fields.List(fields.UUID(), description='Fetch notes via GET /v2/notes/{noteId}', dump_only=True)
-    PayToAccountId = fields.UUID(description='Purpose: The account Id on which payments are registered', dump_only=True)
-    ReverseChargeOnConstructionServices = fields.Boolean(description='Default: false. Purpose: If true, VatNumber must be set aswell')
-    SalesDocumentLanguage = fields.String(description='Max length: 2 characters', validate=[Length(min=0, max=2, equal=None)])
-    SalesPriceListId = fields.UUID(description='Returns the sales price list id that is connected to the customer. It will be used only for Pro variant companies')
-    Telephone = fields.String(description='Max length: 50 characters', validate=[Length(min=0, max=50, equal=None)])
-    TermsOfPayment = fields.Nested(lambda: TermsOfPaymentApi())
-    TermsOfPaymentId = fields.UUID(required=True, description='Source: Get from /v2/termsofpayment')
-    UnpaidInvoicesAmount = fields.Number(description='The total amount of unpaid invoices for the customer.', dump_only=True)
-    VatNumber = fields.String(description='Max length: 20 characters. Format: 2 character country code followed by 8-12 numbers.', validate=[Length(min=0, max=20, equal=None)])
-    WebshopCustomerNumber = fields.Integer()
-    WwwAddress = fields.String(description='Max length: 255 characters', validate=[Length(min=0, max=255, equal=None)])
+class Customer(VismaModel):
+
+    AutoInvoiceActivationEmailSentDate = fields.AwareDateTime(allow_none=True)
+    AutoInvoiceRegistrationRequestSentDate = fields.AwareDateTime(allow_none=True)
+    ChangedUtc = fields.AwareDateTime(description='Purpose: Returns the last date and time from when a change was made on the customer', dump_only=True, allow_none=True)
+    ContactPersonEmail = fields.String(description='Max length: 255 characters', validate=[Length(min=0, max=255, equal=None)], allow_none=True)
+    ContactPersonMobile = fields.String(description='Max length: 50 characters', validate=[Length(min=0, max=50, equal=None)], allow_none=True)
+    ContactPersonName = fields.String(description='Max length: 100 characters', validate=[Length(min=0, max=100, equal=None)], allow_none=True)
+    ContactPersonPhone = fields.String(description='Max length: 50 characters', validate=[Length(min=0, max=50, equal=None)], allow_none=True)
+    CorporateIdentityNumber = fields.String(description='Max length: 20 characters', validate=[Length(min=0, max=20, equal=None)], allow_none=True)
+    CurrencyCode = fields.String(description='Max length: 3 characters. Default value: Currency of the user company', validate=[Length(min=0, max=3, equal=None)], allow_none=True)
+    CustomerLabels = fields.List(fields.Nested(lambda: CustomerLabelApi()), allow_none=True)
+    CustomerNumber = fields.String(description='Max length: 16 characters. Purpose: Unique identifier. If not provided, eAccounting will provide one', validate=[Length(min=0, max=16, equal=None)], allow_none=True)
+    DeliveryAddress1 = fields.String(description='Max length: 50 characters. Purpose: Only used if invoice address differs from delivery address', validate=[Length(min=0, max=50, equal=None)], allow_none=True)
+    DeliveryAddress2 = fields.String(description='Max length: 50 characters. Purpose: Only used if invoice address differs from delivery address', validate=[Length(min=0, max=50, equal=None)], allow_none=True)
+    DeliveryBasedVat = fields.Boolean(description='Purpose: Option to set the delivery address as the base for vat and oss calculations. Delivery city, country code and postal code must be set as well', default=False)
+    DeliveryCity = fields.String(description='Max length: 50 characters. Purpose: Only used if invoice city differs from delivery city', validate=[Length(min=0, max=50, equal=None)], allow_none=True)
+    DeliveryCountryCode = fields.String(description='Max length: 2 characters. Purpose: Only used if invoice country code differs from delivery country code', validate=[Length(min=0, max=2, equal=None)], allow_none=True)
+    DeliveryCustomerName = fields.String(description='Max length: 100 characters', validate=[Length(min=0, max=100, equal=None)], allow_none=True)
+    DeliveryMethodId = fields.UUID(description='Source: Get from /v2/deliverymethods', allow_none=True)
+    DeliveryPostalCode = fields.String(description='Max length: 10 characters. If DeliveryBasedVat is set to true this should be filled in as well', validate=[Length(min=0, max=10, equal=None)], allow_none=True)
+    DeliveryTermId = fields.UUID(description='Source: Get from /v2/deliveryterms', allow_none=True)
+    DirectDebitCustomerSettings = fields.Nested(lambda: DirectDebitCustomerSettingsApi(), allow_none=True)
+    DiscountAgreementId = fields.UUID(description='Returns the discount agreement id that is connected to the customer. It will be used only for Pro variant companies', allow_none=True)
+    DiscountPercentage = fields.Number(description='Format: 4 decimals', validate=[Range(min=0, max=1, min_inclusive=True, max_inclusive=True), Regexp(regex=re.compile('[-]?\\d+(.\\d{1,4})?'))], default=0)
+    EdiGlnNumber = fields.String(validate=[Length(min=0, max=255, equal=None)], allow_none=True)
+    EdiServiceDelivererId = fields.String(validate=[Length(min=0, max=255, equal=None)], allow_none=True)
+    ElectronicAddress = fields.String(validate=[Length(min=0, max=255, equal=None)], allow_none=True)
+    ElectronicReference = fields.String(validate=[Length(min=0, max=35, equal=None)], allow_none=True)
+    EmailAddress = fields.String(description='Max length: 255 characters\r\nThis is a default email address for sending customer invoices.\r\nIf EmailAddressOrder and EmailAddressQuote properties are empty we use this email as default one for sending quotes and orders.', validate=[Length(min=0, max=255, equal=None)], allow_none=True)
+    EmailAddressOrder = fields.String(description='Max length: 255 characters\r\nThis is a default email address for sending orders.\r\nIf it is empty then we use general EmailAddress property.', validate=[Length(min=0, max=255, equal=None)], allow_none=True)
+    EmailAddressQuote = fields.String(description='Max length: 255 characters\r\nThis is a default email address for sending quotes.\r\nIf it is empty then we use general EmailAddress property.', validate=[Length(min=0, max=255, equal=None)], allow_none=True)
+    EmailAddresses = fields.List(fields.String(), allow_none=True)
+    ForceBookkeepVat = fields.Boolean(default=True, allow_none=True)
+    GLN = fields.String(description='NOTE: Obsolete. Please use EdiGlnNumber instead', validate=[Length(min=0, max=255, equal=None)], allow_none=True)
+    Iban = fields.String(description="Max length: 35 characters\r\nDefault value: existing database value (PUT) or empty string (POST)\r\nPurpose: Customer's bank account IBAN (manual entry)", validate=[Length(min=0, max=35, equal=None)], allow_none=True)
+    Id = fields.UUID(description='Purpose: Unique Id provided by eAccounting', load_only=True, allow_none=True)
+    InvoiceAddress1 = fields.String(description='Max length: 50 characters', validate=[Length(min=0, max=50, equal=None)], allow_none=True)
+    InvoiceAddress2 = fields.String(description='Max length: 50 characters', validate=[Length(min=0, max=50, equal=None)], allow_none=True)
+    invoice_city = fields.String(required=True, description='Max length: 50 characters', validate=[Length(min=0, max=50, equal=None)], allow_none=True, data_key='InvoiceCity')
+    InvoiceCountryCode = fields.String(description='Max length: 2 characters. When setting a VAT number this should be filled in as well.', validate=[Length(min=0, max=2, equal=None)], allow_none=True)
+    invoice_postal_code = fields.String(required=True, description='Max length: 10 characters', validate=[Length(min=0, max=10, equal=None)], allow_none=True, data_key="InvoicePostalCode")
+    is_active = fields.Boolean(required=True, allow_none=True, data_key="IsActive")
+    IsDirectDebitEnabled = fields.Boolean(description='Purpose: Setting for Direct Debit payments', allow_none=True)
+    IsFutureInvoiceDateAllowed = fields.Boolean(description='Purpose: Future dates on invoices are allowed based on terms of payments and invoice currency code settings', dump_only=True, default=True, allow_none=True)
+    IsNorthernIreland = fields.Boolean(allow_none=True)
+    is_private_person = fields.Boolean(required=True, allow_none=True, data_key="IsPrivatePerson")
+    LastInvoiceDate = fields.AwareDateTime(description='Purpose: Returns the last invoice date', dump_only=True, allow_none=True)
+    MessageThreads = fields.List(fields.UUID(), description='Fetch messages via GET /v2/messagethreads/{messageThreadId}', dump_only=True, allow_none=True)
+    MobilePhone = fields.String(description='Max length: 50 characters', validate=[Length(min=0, max=50, equal=None)], allow_none=True)
+    name = fields.String(required=True, description='Max length: 50 characters', validate=[Length(min=0, max=50, equal=None)], allow_none=True, data_key="Name")
+    Note = fields.String(description='Max length: 4000 characters', validate=[Length(min=0, max=4000, equal=None)], allow_none=True)
+    Notes = fields.List(fields.UUID(), description='Fetch notes via GET /v2/notes/{noteId}', dump_only=True, allow_none=True)
+    PayToAccountId = fields.UUID(description='Purpose: The account Id on which payments are registered', dump_only=True, allow_none=True)
+    ReverseChargeOnConstructionServices = fields.Boolean(description='Default: false. Purpose: If true, VatNumber must be set aswell', allow_none=True, load_only=True)
+    SalesDocumentLanguage = fields.String(description='Max length: 2 characters', validate=[Length(min=0, max=2, equal=None)], allow_none=True)
+    SalesPriceListId = fields.UUID(description='Returns the sales price list id that is connected to the customer. It will be used only for Pro variant companies', allow_none=True)
+    Telephone = fields.String(description='Max length: 50 characters', validate=[Length(min=0, max=50, equal=None)], allow_none=True)
+    terms_of_payment_id = fields.UUID(required=True, description='Source: Get from /v2/termsofpayment', data_key="TermsOfPaymentId")
+    TermsOfPayment = fields.Nested(lambda: TermsOfPayment(), allow_none=True)
+    UnpaidInvoicesAmount = fields.Number(description='The total amount of unpaid invoices for the customer.', dump_only=True, allow_none=True, default=0, required=True)
+    VatNumber = fields.String(description='Max length: 20 characters. Format: 2 character country code followed by 8-12 numbers.', validate=[Length(min=0, max=20, equal=None)], allow_none=True)
+    WebshopCustomerNumber = fields.Integer(allow_none=True)
+    WwwAddress = fields.String(description='Max length: 255 characters', validate=[Length(min=0, max=255, equal=None)], allow_none=True)
 
     class Meta:
-        unknown = INCLUDE
+        endpoint = '/customers'
+        allowed_methods = ['list', 'get', 'create', 'update', 'delete']
+        envelope_class = PaginatedResponse
+        envelopes = {'list': {'class': PaginatedResponse, 'data_attr': 'Data'}}
+
 
 
 
@@ -790,7 +814,7 @@ class CustomerInvoiceApi(Schema):
 
 
 
-class CustomerInvoiceDraftApi(Schema):
+class CustomerInvoiceDraft(VismaModel):
     BuyersOrderReference = fields.String(description='Purpose: Used when sending electronic invoices. Max length: 35 characters. Can be null or empty', validate=[Length(min=0, max=35, equal=None)])
     ContributionMargin = fields.Nested(lambda: ContributionMarginApi())
     CreatedUtc = fields.AwareDateTime(description='Purpose: Is automatically set', dump_only=True)
@@ -3712,7 +3736,7 @@ class SupplierApi(Schema):
     SupplierNumber = fields.String(description='Max length: 16 characters. Purpose: Unique identifier. If not provided, eAccounting will provide one', validate=[Length(min=0, max=16, equal=None)])
     Telephone = fields.String(description='Max length: 50 characters', validate=[Length(min=0, max=50, equal=None)])
     TermsOfPaymentId = fields.UUID(required=True, description='Source: Get from /v2/termsofpayment')
-    UnpaidInvoicesAmount = fields.Number()
+    UnpaidInvoicesAmount = fields.Number(default=0)
     UsesPaymentReferenceNumbers = fields.Boolean(description='Purpose: Used if the supplier uses payment reference numbers, OCR, KID etc. NO and SE only. Default: false')
     VatNumber = fields.String(description='Max length: 20 characters. Purpose: Only used in dutch eAccounting, used to check the VAT number before deducting the VAT (legislation) or for 3rd parties to validate supplier invoice information', validate=[Length(min=0, max=20, equal=None)])
     WwwAddress = fields.String(description='Max length: 255 characters', validate=[Length(min=0, max=255, equal=None)])
@@ -3882,19 +3906,20 @@ class TaxDeclarationDateApi(Schema):
 
 
 
-class TermsOfPaymentApi(Schema):
-    AvailableForPurchase = fields.Boolean()
-    AvailableForSales = fields.Boolean()
+class TermsOfPayment(Schema):
+    AvailableForPurchase = fields.Boolean(allow_none=True)
+    AvailableForSales = fields.Boolean(allow_none=True)
     Id = fields.UUID(description='Purpose: Unique Id provided by eAccounting', dump_only=True)
     Name = fields.String()
     NameEnglish = fields.String()
     NumberOfDays = fields.Integer()
     TermsOfPaymentTypeId = fields.Integer(description='0 = Normal, 1 = CurrentMonth, 2 = Cash, 3 = CardPayment, 4 = DigitalWallet, 5 = PaymentServiceProvider')
-    TermsOfPaymentTypeText = fields.String()
+    TermsOfPaymentTypeText = fields.String(allow_none=True)
 
     class Meta:
-        unknown = INCLUDE
-
+        endpoint = '/termsofpayments'
+        allowed_methods = ['list', 'get']
+        envelopes = {'list': {'class': PaginatedResponse, 'data_attr': 'Data'}}
 
 
 class TopQueryOption(Schema):

@@ -26,6 +26,7 @@ class Manager:
     def register_schema(self, schema_klass):
         self._schema = schema_klass
         self.schema = self._schema()
+        logger.warning(f"Schema: {self.schema}, Schema Klass: {self._schema}, Schema Klass: {type(self._schema)}")
 
     def register_envelope(self, method, envelope_klass):
         self.envelopes[method.upper()] = envelope_klass._schema_klass()
@@ -78,7 +79,9 @@ class Manager:
         result = self.api.post(self.endpoint, json.dumps(out_data))
         in_data = result.json()
         logger.debug(f'Received {in_data}')
+        logger.warning("****")
         new_obj = self.schema.load(in_data)
+        logger.warning("****")
         return new_obj
 
     def update(self, obj, method='UPDATE'):

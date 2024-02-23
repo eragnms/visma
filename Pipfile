@@ -7,6 +7,8 @@ name = "pypi"
 swagger-marshmallow-codegen = "*"
 requests = "*"
 pyyaml = "*"
+sphinx = "*"
+sphinx-rtd-theme = "*"
 
 [dev-packages]
 
