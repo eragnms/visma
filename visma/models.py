@@ -697,7 +697,7 @@ class Customer(VismaModel):
     invoice_postal_code = fields.String(required=True, description='Max length: 10 characters', validate=[Length(min=0, max=10, equal=None)], allow_none=True, data_key="InvoicePostalCode")
     is_active = fields.Boolean(required=True, allow_none=True, data_key="IsActive")
     IsDirectDebitEnabled = fields.Boolean(description='Purpose: Setting for Direct Debit payments', allow_none=True)
-    IsFutureInvoiceDateAllowed = fields.Boolean(description='Purpose: Future dates on invoices are allowed based on terms of payments and invoice currency code settings', load_only=True, default=True, allow_none=True)
+    IsFutureInvoiceDateAllowed = fields.Boolean(description='Purpose: Future dates on invoices are allowed based on terms of payments and invoice currency code settings', load_only=True)
     IsNorthernIreland = fields.Boolean(allow_none=True)
     is_private_person = fields.Boolean(required=True, allow_none=True, data_key="IsPrivatePerson")
     LastInvoiceDate = fields.AwareDateTime(description='Purpose: Returns the last invoice date', load_only=True, allow_none=True)
