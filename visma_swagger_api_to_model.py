@@ -2,11 +2,6 @@
 
 Takes the URL of the Visma eAccounting API Swagger definition and saves it
 to a marchmallow model file that can be used by the package visma.
-
-The function fetches a Swagger definition from a URL and saves it to a json
-file. One can then run:
-> swagger-marshmallow-codegen swagger.json > my_model.py, to generate a
-marshmallow model from the Swagger definition.
 """
 
 import subprocess
