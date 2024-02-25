@@ -39,6 +39,10 @@ serializing (or "dumping") data. It will be ignored during deserialization (load
 load_only=True: This option tells Marshmallow that the field should only be included when
 deserializing (or "loading") data. It will be ignored during serialization (dumping
 
+If a field is defined as optional in the Swagger API, you can represent that in the final Python
+Marshmallow model by allowing None values for that field. In Marshmallow, you can achieve this using
+the allow_none=True parameter when defining the field.
+
 Use case create customer
 ------------------------
 

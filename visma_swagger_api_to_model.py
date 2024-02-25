@@ -2,6 +2,12 @@
 
 Takes the URL of the Visma eAccounting API Swagger definition and saves it
 to a marchmallow model file that can be used by the package visma.
+
+Another approach (that seems to give the same result):
+
+curl -o swagger.json https://eaccountingapi.vismaonline.com:443/swagger/docs/v2
+openapi-generator-cli generate -g openapi -i https://eaccountingapi.vismaonline.com:443/swagger/docs/v2 -o visma --skip-validate-spec
+swagger-marshmallow-codegen visma/openapi.json > openapi.py
 """
 
 import subprocess
@@ -71,6 +77,6 @@ swagger_definition = fetch_swagger_definition(swagger_url)
 if swagger_definition:
     convert_to_yaml(swagger_definition, yaml_file)
     generate_model(yaml_file, model_file)
-    delete_file(yaml_file)
+    # delete_file(yaml_file)
 else:
     print("Failed to fetch Swagger definition")
