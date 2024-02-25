@@ -125,8 +125,6 @@ class VismaAPI:
 
     def post(self, endpoint, data, *args, **kwargs):
         url = self._format_url(endpoint)
-        logger.debug(f"**** POST {url} :: {data}")
-        logger.warning("****")
         r = requests.post(url, data, *args, headers=self.api_headers, **kwargs)
         if not r.ok:
             raise VismaAPIException(
